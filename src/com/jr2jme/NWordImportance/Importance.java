@@ -46,21 +46,26 @@ public class Importance {
             String editor = dates.getKey();
             for(Date date:dates.getValue()){
                 if(prevdate!=null){//一つ前が存在していた場合
-                    Boolean notexist = true;
                     for(Integer in :getedits(articlehis,prevdate,date)){//間にあった編集を取得して
-                        if(articlehis.getHistories().get(in).getEditor().equals(editor)&&notexist){
+                        if(articlehis.getHistories().get(in).getEditor().equals(editor)){
                             articlehis.getHistories().get(in);//なんかする
-                            notexist=false;
                             //https://ja.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=xml&revids=37564635 でアクセス可能
-                            String txt = WikiNote.parsepageid(articlehis.getHistories().get(in).getId());//履歴指定するには情報が足りないか 少し変える必要あり
+                            //String txt = WikiNote.parsepageid(articlehis.getHistories().get(in).getId());
+
+                            calceditsurvival(articlehis,in,in+10);//使い方の例
                             //本当にやらなければいけないことは何か
                             //もういやだ
                             //っだめなんだっけ
                             //なんで正直になってはいけないのか
+
+                            //期間でやるよりは編集回数で見た方がいい
+                            //最後にノートページに書き込んだ人が編集してから10回とか，残りの編集回数の何割とか
+                            //明日だな 疲れた
                         }
                         //最初と最後とか
                     }
-                }
+                }//人中心じゃなくてもいいのでは？
+                prevdate = date;
             }
         }
 
