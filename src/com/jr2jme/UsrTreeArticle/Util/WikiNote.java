@@ -129,33 +129,60 @@ public class WikiNote {
 
 
 
-    public static void parsepageid(String revid){//
-        //sleep(1000);
-        final String TARGET_HOST = "https://ja.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=xml&revids=";
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = null;
-        Document root = null;
-        String url = null;
-        try {
-            builder = factory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
+    public static String parsepageid(String revid){//
+
+        File dirfile = new File("Articletxtid");
+        if(!dirfile.exists()){
+            dirfile.mkdir();
         }
-        try {
-            url=URLEncoder.encode(revid,"utf-8");
-            System.out.println(TARGET_HOST+url);
-            root = builder.parse(TARGET_HOST+url);
 
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        File notefile = new File("./Articletxtid/"+revid);
+        String txt = null;
+
+        if(notefile.exists()){
+            try {
+                FileInputStream input = new FileInputStream(notefile);
+                ObjectInputStream inObject = new ObjectInputStream(input);
+
+                txt = (String) inObject.readObject();
+                inObject.close();
+                input.close();
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
+
+        }else {
+            //sleep(1000);
+            final String TARGET_HOST = "https://ja.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=xml&revids=";
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = null;
+            Document root = null;
+            String url = null;
+            try {
+                builder = factory.newDocumentBuilder();
+            } catch (ParserConfigurationException e) {
+                e.printStackTrace();
+            }
+            try {
+                url = URLEncoder.encode(revid, "utf-8");
+                System.out.println(TARGET_HOST + url);
+                root = builder.parse(TARGET_HOST + url);
+
+            } catch (SAXException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            NodeList gchildren = root.getElementsByTagName("rev");
+            txt = gchildren.item(0).getTextContent();
         }
-        NodeList gchildren = root.getElementsByTagName("rev");
-        System.out.println(gchildren.item(0).getTextContent());
-
-
-
+        return txt;
     }
 
 

@@ -1,5 +1,6 @@
 package com.jr2jme.NWordImportance;
 
+import com.jr2jme.Rev.Levenshtein3;
 import com.jr2jme.UsrTreeArticle.Util.WikiNote;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -51,7 +52,7 @@ public class Importance {
                             articlehis.getHistories().get(in);//なんかする
                             notexist=false;
                             //https://ja.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=xml&revids=37564635 でアクセス可能
-                            WikiNote.parsepageid(articlehis.getHistories().get(in).getId());//履歴指定するには情報が足りないか 少し変える必要あり
+                            String txt = WikiNote.parsepageid(articlehis.getHistories().get(in).getId());//履歴指定するには情報が足りないか 少し変える必要あり
                             //本当にやらなければいけないことは何か
                             //もういやだ
                             //っだめなんだっけ
@@ -63,10 +64,34 @@ public class Importance {
             }
         }
 
+    }
 
+    public double calceditsurvival(WikiNote.Histories his,int mae,int recent){
 
+        Levenshtein3 lev = new Levenshtein3();
+        char[] vi =WikiNote.parsepageid(his.getHistories().get(mae).getId()).toCharArray();
+        char[] vi1;
+        if(mae!=0){
+            vi1=WikiNote.parsepageid(his.getHistories().get(mae-1).getId()).toCharArray();
+        }else{
+            vi1="".toCharArray();
+        }
+        char[] vj = WikiNote.parsepageid(his.getHistories().get(recent).getId()).toCharArray();
+        double dvivj = countdiff(lev.diff(Arrays.asList(vi), Arrays.asList(vj)));
+        double dvi1vj = countdiff(lev.diff(Arrays.asList(vi1), Arrays.asList(vj)));
+        double dvi1vi = countdiff(lev.diff(Arrays.asList(vi1), Arrays.asList(vi)));
+        return (dvi1vj-dvivj)/dvi1vi;
 
+    }
 
+    private int countdiff(List<String> lev){
+        int count = 0;
+        for(String s:lev){
+            if(!lev.equals("|")){
+                count++;
+            }
+        }
+        return count;
     }
 
     /*public Map<String,Map<Date,double[]>> getcalc(Map<String, List<Date>> stampname){//ノートページの書き込みの間に含まれる編集を所得してどうのこうの？
