@@ -37,8 +37,8 @@ public class Importance {
 
         WikiNote wikiNote = new WikiNote();
         this.title=title;
-        WikiNote.History notehis = wikiNote.gethistory(title,true);//
-        WikiNote.History articlehis = wikiNote.gethistory(title,false);//編集履歴の取得
+        WikiNote.Histories notehis = wikiNote.gethistory(title,true);//
+        WikiNote.Histories articlehis = wikiNote.gethistory(title,false);//編集履歴の取得
 
         for(Map.Entry<String,List<Date>> dates:notehis.getEditormain().entrySet()){//うまくまとまらない
             Date prevdate=null;//ひとつ前に編集したやつを記録する
@@ -47,11 +47,11 @@ public class Importance {
                 if(prevdate!=null){//一つ前が存在していた場合
                     Boolean notexist = true;
                     for(Integer in :getedits(articlehis,prevdate,date)){//間にあった編集を取得して
-
-                        if(articlehis.getEditors().get(in).equals(editor)&&notexist){
-                            articlehis.getAlldatelist().get(in);//なんかする
+                        if(articlehis.getHistories().get(in).getEditor().equals(editor)&&notexist){
+                            articlehis.getHistories().get(in);//なんかする
                             notexist=false;
-                            //parsexml(title+固有のID);//履歴指定するには情報が足りないか 少し変える必要あり
+                            //https://ja.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=xml&revids=37564635 でアクセス可能
+                            WikiNote.parsepageid(articlehis.getHistories().get(in).getId());//履歴指定するには情報が足りないか 少し変える必要あり
                             //本当にやらなければいけないことは何か
                             //もういやだ
                             //っだめなんだっけ
@@ -144,12 +144,12 @@ public class Importance {
     }*/
 
 
-    public List<Integer> getedits(WikiNote.History his,Date date, Date nextdate){
+    public List<Integer> getedits(WikiNote.Histories his,Date date, Date nextdate){
         List intlist = new ArrayList();//日付の間に行った編集があるインデックスのリスト
-        for(int c =0;c<his.getAlldatelist().size();c++){
-            Date current = his.getAlldatelist().get(c);
-            if((date.compareTo(current))>0){
-                if((nextdate.compareTo(current))<=0){
+        for(int c =0;c<his.getHistories().size();c++){
+            WikiNote.Histories.History current = his.getHistories().get(c);
+            if((date.compareTo(current.getDate()))>0){
+                if((nextdate.compareTo(current.getDate()))<=0){
                     intlist.add((c));
                 }else{
                     break;

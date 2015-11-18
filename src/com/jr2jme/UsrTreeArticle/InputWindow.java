@@ -13,8 +13,9 @@ public class InputWindow {
     SqlOp sq = null;
 	public static void main(String[] args) throws IOException {
         //Analyzer an = new Analyzer();
-        InputWindow inter = new InputWindow();
-        inter.test();
+        //InputWindow inter = new InputWindow();
+        //inter.test();
+        com.jr2jme.UsrTreeArticle.Util.WikiNote.parsepageid("37564635");
         //何を迷っている
         //System.out.println(ArticleEditorRanker.articleredrank("UNIX","ごまふあざ"));//こっからどうするか
         //System.out.println(ArticleEditorRanker.editoreditorrank("あるうぃんす","ゴンベイ"));
@@ -190,9 +191,9 @@ public class InputWindow {
 
     public void getallediteduser(String article,Integer env){//渡された
         com.jr2jme.UsrTreeArticle.Util.WikiNote wikiNote = new com.jr2jme.UsrTreeArticle.Util.WikiNote();
-        com.jr2jme.UsrTreeArticle.Util.WikiNote.History editors = wikiNote.gethistory(article,true);//あるノートページを編集した人全て入手
-        for(String editor:editors.getEditors()){
-            mainact(editor,env);//とりあえず全ての人のグラフを作る
+        com.jr2jme.UsrTreeArticle.Util.WikiNote.Histories editors = wikiNote.gethistory(article,true);//あるノートページを編集した人全て入手
+        for(com.jr2jme.UsrTreeArticle.Util.WikiNote.Histories.History editor:editors.getHistories()){
+            mainact(editor.getEditor(),env);//とりあえず全ての人のグラフを作る
         }
     }
 
