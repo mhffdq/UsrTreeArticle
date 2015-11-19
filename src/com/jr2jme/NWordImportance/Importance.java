@@ -21,11 +21,16 @@ import java.util.*;
 /**
  * Created by K.H on 2015/09/18.
  */
+//本当にやらなければいけないことは何か
+//もういやだ
+//っだめなんだっけ
+//なんで正直になってはいけないのか
 
+//期間でやるよりは編集回数で見た方がいい
+//最後にノートページに書き込んだ人が編集してから10回とか，残りの編集回数の何割とか
+//明日だな 疲れた
 public class Importance {
 
-    Integer CDAYS=null;
-    Integer DeDAYS=null;
     String title = null;
     public void importance(String title) throws IOException {//ここでやりたいのは，反映されたかどうかみて重要度を求める作業
 //コメントの間の編集を見る
@@ -41,43 +46,70 @@ public class Importance {
         WikiNote.Histories notehis = wikiNote.gethistory(title,true);//
         WikiNote.Histories articlehis = wikiNote.gethistory(title,false);//編集履歴の取得
 
-        for(Map.Entry<String,List<Date>> dates:notehis.getEditormain().entrySet()){//うまくまとまらない
-            Date prevdate=null;//ひとつ前に編集したやつを記録する
+        for(Map.Entry<String,List<WikiNote.Histories.History>> dates:notehis.getEditormain().entrySet()){//こっちはノートの書き込み
+            WikiNote.Histories.History prevdate=null;//ひとつ前に編集したやつを記録する（ノート）
             String editor = dates.getKey();
-            for(Date date:dates.getValue()){
+            for(WikiNote.Histories.History date:dates.getValue()){//editorがノートを編集した日付
                 if(prevdate!=null){//一つ前が存在していた場合
-                    for(Integer in :getedits(articlehis,prevdate,date)){//間にあった編集を取得して
-                        if(articlehis.getHistories().get(in).getEditor().equals(editor)){
-                            articlehis.getHistories().get(in);//なんかする
-                            //https://ja.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=xml&revids=37564635 でアクセス可能
-                            //String txt = WikiNote.parsepageid(articlehis.getHistories().get(in).getId());
+                    operation(articlehis,getedits(articlehis,prevdate.getDate(),date.getDate()),editor);
 
-                            calceditsurvival(articlehis,in,in+10);//使い方の例
-                            //本当にやらなければいけないことは何か
-                            //もういやだ
-                            //っだめなんだっけ
-                            //なんで正直になってはいけないのか
-
-                            //期間でやるよりは編集回数で見た方がいい
-                            //最後にノートページに書き込んだ人が編集してから10回とか，残りの編集回数の何割とか
-                            //明日だな 疲れた
-                        }
-                        //最初と最後とか
-                    }
-                }//人中心じゃなくてもいいのでは？
+                }
                 prevdate = date;
             }
+            //ノートページの最後の書き込み
+
+            operation(articlehis,getedits(articlehis,prevdate.getDate(),15),editor);
+
+
         }
 
     }
 
-    public double calceditsurvival(WikiNote.Histories his,int mae,int recent){
+    private double operation(WikiNote.Histories articlehis,List<Integer> intlist,String editor){
+        boolean seq = false;//連続しているかどうか
+        boolean exist=false;
+        int editmae=1;
+        int editorend=0;
+        //あんまり間が空いている場合はやめたいが，難しいか
 
+        for(Integer in :intlist){//間にあった編集を取得して
+            if(articlehis.getHistories().get(in).getEditor().equals(editor)){
+                exist=true;
+                if(!seq){
+                    editmae=in-1;
+                }
+                seq=true;
+                editorend=in;
+
+            }
+            else{
+                seq=false;
+            }
+            //最初と最後とか
+        }
+        if(exist) {
+            int en = 0;
+            if (articlehis.getHistories().size() > editorend + 10) {
+                en = editorend + 10;
+
+            } else {
+                en = articlehis.getHistories().size() - 1;
+            }
+            return calceditsurvival(articlehis, editmae, editorend, en);//使い方の例
+        }
+        else{
+            return 0;//全く反映されないのと編集していないのは違うから区別したい
+        }
+    }
+
+
+
+    public double calceditsurvival(WikiNote.Histories his,int kaishi,int edited,int recent){
         Levenshtein3 lev = new Levenshtein3();
-        char[] vi =WikiNote.parsepageid(his.getHistories().get(mae).getId()).toCharArray();
+        char[] vi =WikiNote.parsepageid(his.getHistories().get(edited).getId()).toCharArray();
         char[] vi1;
-        if(mae!=0){
-            vi1=WikiNote.parsepageid(his.getHistories().get(mae-1).getId()).toCharArray();
+        if(edited!=0){
+            vi1=WikiNote.parsepageid(his.getHistories().get(kaishi).getId()).toCharArray();
         }else{
             vi1="".toCharArray();
         }
@@ -174,7 +206,7 @@ public class Importance {
     }*/
 
 
-    public List<Integer> getedits(WikiNote.Histories his,Date date, Date nextdate){
+    public List<Integer> getedits(WikiNote.Histories his,Date date, Date nextdate){//日付指定良くないのでは
         List intlist = new ArrayList();//日付の間に行った編集があるインデックスのリスト
         for(int c =0;c<his.getHistories().size();c++){
             WikiNote.Histories.History current = his.getHistories().get(c);
@@ -188,6 +220,22 @@ public class Importance {
         }
         return intlist;
     }
+
+    public List<Integer> getedits(WikiNote.Histories his,Date date, int number){//日付指定良くないのでは
+        List intlist = new ArrayList();//日付の間に行った編集があるインデックスのリスト
+        for(int c =0;c<his.getHistories().size();c++){
+            WikiNote.Histories.History current = his.getHistories().get(c);
+            if((date.compareTo(current.getDate()))>0){
+                    intlist.add((c));
+                if(intlist.size()>number){
+                    break;
+                }
+            }
+        }
+        return intlist;
+    }
+
+
 
     class Edit{
         List<String> words;

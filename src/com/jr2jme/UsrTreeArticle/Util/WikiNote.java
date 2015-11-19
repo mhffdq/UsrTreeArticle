@@ -188,20 +188,21 @@ public class WikiNote {
 
 
     public class Histories{
-        Map<String,List<Date>> editormain = new HashMap<String, List<Date>>();
+        Map<String,List<History>> editormain = new HashMap<String, List<History>>();
         List<History> histories = new ArrayList<History>();
 
 
         public void addedit(Date date,String editor,String id){
+            History his = new History(date,editor,id);
             if(editormain.containsKey(editor)){
-                editormain.get(editor).add(date);
+                editormain.get(editor).add(his);
             } else {
-                List<Date> list = new ArrayList<Date>();
-                list.add(date);
+                List<History> list = new ArrayList<History>();
+                list.add(his);
                 editormain.put(editor, list);
             }
 
-            histories.add(new History(date,editor,id));
+            histories.add(his);
         }
 
         public List<History> getHistories(){
@@ -231,7 +232,7 @@ public class WikiNote {
             }
         }
 
-        public Map<String, List<Date>> getEditormain() {
+        public Map<String, List<History>> getEditormain() {
             return editormain;
         }
     }
