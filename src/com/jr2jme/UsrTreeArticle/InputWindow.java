@@ -13,16 +13,42 @@ public class InputWindow {
     SqlOp sq = null;
 	public static void main(String[] args) throws IOException {
         //Analyzer an = new Analyzer();
-        //InputWindow inter = new InputWindow();
+        InputWindow inter = new InputWindow();
         //inter.test();
-        com.jr2jme.UsrTreeArticle.Util.WikiNote.parsepageid("37564635");
+        //com.jr2jme.UsrTreeArticle.Util.WikiNote.parsepageid("37564635");
         //何を迷っている
         //System.out.println(ArticleEditorRanker.articleredrank("UNIX","ごまふあざ"));//こっからどうするか
         //System.out.println(ArticleEditorRanker.editoreditorrank("あるうぃんす","ゴンベイ"));
         //System.out.println(ArticleEditorRanker.artartdrank("江戸しぐさ","Linux"));//こっからどうするか
 
-        //mediawikiの仕組みも考えられてああなってるわけだから
-        //使う分だけ使いやすくとかはできるかな
+        WikiNote wikiNote = new WikiNote();
+        wikiNote.getcatshita("Category:主要カテゴリ",0);
+
+        /*Feature editfe = new Feature(ArticleEditorRanker.testuserarticle("ごまふあざ"));//編集者の特徴ベクトル的なもの
+        Feature editfetfidf = new Feature(ArticleEditorRanker.testuserarticletfidf("ごまふあざ"));
+
+        int c = 0;
+        int x = 0;
+        List<String> list = new ArrayList<String>();
+        List<Integer> intlist = new ArrayList<Integer>();
+        for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfe.getTfidf())){
+            if(c==75||c==60||c==1||c==49||c==57||c==35||c==99||c==39||c==70||c==34||c==77||c==25||c==28||c==41||c==5||c==17||c==2||c==71||c==20||c==80) {
+                x++;
+                list.add(entry.getKey());
+                intlist.add(x);
+                //System.out.println("<li class=\"ui-state-default\">" + entry.getKey() + "<span>" + x + "</span>");
+            }
+            c++;
+            if(c>100){
+                break;
+            }
+        }
+        for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfetfidf.getTfidf())){
+            if(list.contains(entry.getKey())){
+                System.out.println(entry.getKey()+(list.indexOf(entry.getKey())+1));
+            }
+        }*/
+
 
         //考えてるだけじゃわかる兄から何かやってみる
         //何をやったらいいかな
@@ -36,6 +62,8 @@ public class InputWindow {
         //改良 どうなったら改良になるのか
 
         //編集している記事のカテゴリが近いかどうか求めることも可能
+        //いろいろやってみはした．
+        //足りないのは実験とかその辺の重要な部分とか
 
 //何ができたらいいのかな
         //どうつくればいいかな

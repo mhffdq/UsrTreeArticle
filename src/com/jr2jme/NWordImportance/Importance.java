@@ -29,6 +29,7 @@ import java.util.*;
 //期間でやるよりは編集回数で見た方がいい
 //最後にノートページに書き込んだ人が編集してから10回とか，残りの編集回数の何割とか
 //明日だな 疲れた
+
 public class Importance {
 
     String title = null;
@@ -71,6 +72,8 @@ public class Importance {
         int editmae=1;
         int editorend=0;
         //あんまり間が空いている場合はやめたいが，難しいか
+        //どう反映させよう
+        //グラフ，ノードのサイズ
 
         for(Integer in :intlist){//間にあった編集を取得して
             if(articlehis.getHistories().get(in).getEditor().equals(editor)){

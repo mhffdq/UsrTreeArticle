@@ -150,6 +150,8 @@ public class WikiNote {
         return categories;
 	}
 
+    //カテゴリの上にある度合を保存
+
     public Category getcategoriescat(String catename){//編集した記事のカテゴリーを取得(カテゴリ専用)
         File dirfile;
         File catefile;
@@ -223,7 +225,7 @@ public class WikiNote {
         return categories;
     }
 
-    private void catope(Set<String> names,Map<String,Integer> categories,Integer depth){
+    private void catope(Set<String> names,Map<String,Integer> categories,Integer depth){//上に行く
         Set<String> catna = new HashSet<String>();
         System.out.println(depth);
         for(String name:names){//記事名ごとに
@@ -243,6 +245,19 @@ public class WikiNote {
         }
         if(depth<2&&!catna.isEmpty()) {
             catope(catna, categories, depth + 1);
+        }
+    }
+
+    public void getcatshita(String category,int depthstart){//カテゴリを下にさかのぼる
+        if(depthstart<5){
+            if(!category.equals("Category:隠しカテゴリ")&&!category.contains("\\\\")&&!category.contains("/")&&!category.contains(",_")) {
+                for(String next:getcategoriescat(category).getBelowcat()){
+                    System.out.println(next+depthstart);
+                    getcatshita(next,depthstart+1);
+
+                }
+
+            }
         }
     }
 

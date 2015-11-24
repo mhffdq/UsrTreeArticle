@@ -70,18 +70,19 @@ public class ArticleEditorRanker {
 
         //List<Map.Entry> val = valueSort(usercat);
 //全体での出現頻度とか見るゾーン
+        Map<String,Double> usercat = catvec(listmap);
 
 
 
-        return catdisvec(catvec(listmap));
+
+        return catdisvec(usercat);
 
 
 
     }
 
-    public static void testuserarticletfidf(String usrname){//userを入力すると，そのユーザの属性をカテゴリで表してくれそうなやつ
+    public static Map<String,Double>  testuserarticletfidf(String usrname){//userを入力すると，そのユーザの属性をカテゴリで表してくれそうなやつ
 
-        Categories cate = new Categories();
 
         WikiNote wikinote = new WikiNote();
         WikiUsernote wikiusernotet=wikinote.getnotelist(usrname);//useridと編集したノートページの集合が帰ってくる
@@ -95,30 +96,9 @@ public class ArticleEditorRanker {
         Map<String,Double> usercat = catvec(listmap);
 // この２行で解析できる
 
-        //List<Map.Entry> val = valueSort(usercat);
 
-        Tokenizer tokenizer = Tokenizer.builder().build();
-        Map<String,Double> termmap = new HashMap<String, Double>();
-        for(Map.Entry<String,Double> vv:usercat.entrySet()){
-            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
-            for(Token tok:tokens){
-                if(tok.getPartOfSpeech().contains("名詞")){
-                    if(termmap.containsKey(tok.getSurfaceForm())) {
-                        termmap.put(tok.getSurfaceForm(), vv.getValue()*cate.getCatidf().get(tok.getSurfaceForm()) + termmap.get(tok.getSurfaceForm()));
-                    }
-                    else{
-                        termmap.put(tok.getSurfaceForm(), vv.getValue()*cate.getCatidf().get(tok.getSurfaceForm()));
-                    }
-                }
-            }
 
-        }
-
-        List<Map.Entry> val =MaptoList.valueSort(termmap);
-
-        for(int c = 0;c<100;c++){
-            System.out.println(val.get(c));
-        }
+        return catdisvectfidf(usercat);
 
 
     }
@@ -141,6 +121,26 @@ public class ArticleEditorRanker {
         }
         return tf.getTf();
     }
+
+    private static Map<String,Double> catdisvectfidf(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
+
+        Categories cate = new Categories();
+        Tokenizer tokenizer = Tokenizer.builder().build();
+
+        Feature tf = new Feature(1);
+
+        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
+
+            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
+
+            for(Token tok:tokens){
+                if(tok.getPartOfSpeech().contains("名詞")){
+                    tf.addtfcountweight(tok.getSurfaceForm(),vv.getValue()*cate.getCatidf().get(tok.getSurfaceForm()));                }
+            }
+        }
+        return tf.getTf();
+    }
+
 
     private static Map<String,Double> catvec(List<Map<String,Integer>> listmap){
         Map<String,Double> usercat = new HashMap<String, Double>();
