@@ -21,11 +21,14 @@ public class InputWindow {
         //System.out.println(ArticleEditorRanker.editoreditorrank("あるうぃんす","ゴンベイ"));
         //System.out.println(ArticleEditorRanker.artartdrank("江戸しぐさ","Linux"));//こっからどうするか
 
-        WikiNote wikiNote = new WikiNote();
-        wikiNote.getcatshita("Category:主要カテゴリ",0);
+        /*WikiNote wikiNote = new WikiNote();
+        for(Map.Entry<String,Integer> en:wikiNote.catshitaweight().entrySet()){
+            System.out.println(en);
+        }*/
+        //System.out.println(wikiNote.catshitaweight().size());
 
-        /*Feature editfe = new Feature(ArticleEditorRanker.testuserarticle("ごまふあざ"));//編集者の特徴ベクトル的なもの
-        Feature editfetfidf = new Feature(ArticleEditorRanker.testuserarticletfidf("ごまふあざ"));
+        Feature editfe = new Feature(ArticleEditorRanker.testuserarticle("ごまふあざ"));//編集者の特徴ベクトル的なもの
+        Feature editfeanother = new Feature(ArticleEditorRanker.testuserarticlecat("ごまふあざ"));
 
         int c = 0;
         int x = 0;
@@ -43,11 +46,11 @@ public class InputWindow {
                 break;
             }
         }
-        for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfetfidf.getTfidf())){
+        for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfeanother.getTfidf())){
             if(list.contains(entry.getKey())){
                 System.out.println(entry.getKey()+(list.indexOf(entry.getKey())+1));
             }
-        }*/
+        }
 
 
         //考えてるだけじゃわかる兄から何かやってみる

@@ -51,9 +51,7 @@ public class ArticleEditorRanker {
         return editfe1.calccosrel(editfe2);
     }
 
-    public static Map<String,Double> testuserarticle(String usrname){//userを入力すると，そのユーザの属性をカテゴリで表してくれそうなやつ
-
-
+    private static List<Map<String,Integer>> mainop(String usrname){
         WikiNote wikinote = new WikiNote();
         WikiUsernote wikiusernotet=wikinote.getnotelist(usrname);//useridと編集したノートページの集合が帰ってくる
         System.out.println(wikiusernotet.getNotemap().size());
@@ -63,8 +61,15 @@ public class ArticleEditorRanker {
             name.add(artname);
             listmap.add(wikinote.widcategories(name));
         }
+        return listmap;
+    }
+
+    public static Map<String,Double> testuserarticle(String usrname){//userを入力すると，そのユーザの属性をカテゴリで表してくれそうなやつ
 
 
+
+
+        List<Map<String,Integer>> listmap = mainop(usrname);
 
 // この２行で解析できる
 
@@ -82,16 +87,16 @@ public class ArticleEditorRanker {
     }
 
     public static Map<String,Double>  testuserarticletfidf(String usrname){//userを入力すると，そのユーザの属性をカテゴリで表してくれそうなやつ
+        List<Map<String,Integer>> listmap = mainop(usrname);
 
-
-        WikiNote wikinote = new WikiNote();
+        /*WikiNote wikinote = new WikiNote();
         WikiUsernote wikiusernotet=wikinote.getnotelist(usrname);//useridと編集したノートページの集合が帰ってくる
         List<Map<String,Integer>> listmap = new ArrayList<Map<String, Integer>>(wikiusernotet.getNotemap().size());
         for(String artname:wikiusernotet.getNotemap()){
             Set<String> name = new HashSet<String>();
             name.add(artname);
             listmap.add(wikinote.widcategories(name));
-        }
+        }*/
 
         Map<String,Double> usercat = catvec(listmap);
 // この２行で解析できる
@@ -99,6 +104,28 @@ public class ArticleEditorRanker {
 
 
         return catdisvectfidf(usercat);
+
+
+    }
+
+    public static Map<String,Double>  testuserarticlecat(String usrname){//userを入力すると，そのユーザの属性をカテゴリで表してくれそうなやつ
+
+        List<Map<String,Integer>> listmap = mainop(usrname);
+/*        WikiNote wikinote = new WikiNote();
+        WikiUsernote wikiusernotet=wikinote.getnotelist(usrname);//useridと編集したノートページの集合が帰ってくる
+        List<Map<String,Integer>> listmap = new ArrayList<Map<String, Integer>>(wikiusernotet.getNotemap().size());
+        for(String artname:wikiusernotet.getNotemap()){
+            Set<String> name = new HashSet<String>();
+            name.add(artname);
+            listmap.add(wikinote.widcategories(name));
+        }*/
+
+        Map<String,Double> usercat = catvec(listmap);
+// この２行で解析できる
+
+
+
+        return catdisveccat(usercat);
 
 
     }
@@ -141,6 +168,30 @@ public class ArticleEditorRanker {
         return tf.getTf();
     }
 
+    private static Map<String,Double> catdisveccat(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
+        WikiNote wikiNote = new WikiNote();
+        Map<String,Integer> weightmap = wikiNote.catshitaweight();
+        Tokenizer tokenizer = Tokenizer.builder().build();
+
+        Feature tf = new Feature(1);
+
+        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
+
+            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
+
+            for(Token tok:tokens){
+                if(tok.getPartOfSpeech().contains("名詞")){
+                    if(weightmap.containsKey(tok.getSurfaceForm())) {
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * weightmap.get(tok.getSurfaceForm()));
+                    }else{
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() );
+                    }
+                }
+            }
+        }
+        return tf.getTf();
+    }
+
 
     private static Map<String,Double> catvec(List<Map<String,Integer>> listmap){
         Map<String,Double> usercat = new HashMap<String, Double>();
@@ -156,6 +207,8 @@ public class ArticleEditorRanker {
         }
         return usercat;
     }
+
+
 
 
 

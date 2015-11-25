@@ -227,7 +227,6 @@ public class WikiNote {
 
     private void catope(Set<String> names,Map<String,Integer> categories,Integer depth){//上に行く
         Set<String> catna = new HashSet<String>();
-        System.out.println(depth);
         for(String name:names){//記事名ごとに
 
             Set<String> cats ;
@@ -248,16 +247,51 @@ public class WikiNote {
         }
     }
 
-    public void getcatshita(String category,int depthstart){//カテゴリを下にさかのぼる
-        if(depthstart<5){
-            if(!category.equals("Category:隠しカテゴリ")&&!category.contains("\\\\")&&!category.contains("/")&&!category.contains(",_")) {
-                for(String next:getcategoriescat(category).getBelowcat()){
-                    System.out.println(next+depthstart);
-                    getcatshita(next,depthstart+1);
+    public Map<String,Integer> catshitaweight(){
+        Map<String,Integer> weightmap = new HashMap<String, Integer>(800);
 
+
+        File catweightfile = new File("./Catshitaweight");
+
+        if(catweightfile.exists()) {
+            try {
+                FileInputStream input = new FileInputStream(catweightfile);
+                ObjectInputStream inObject = new ObjectInputStream(input);
+
+                weightmap= (Map<String,Integer>) inObject.readObject();
+                inObject.close();
+                input.close();
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }else{
+            catshitaweightop(weightmap, "Category:主要カテゴリ", 0);
+            Output.outputbinary(catweightfile,weightmap);
+        }
+        return weightmap;
+    }
+
+
+
+    private void catshitaweightop(Map<String,Integer>weightmap,String category,int depthstart){//カテゴリを下にさかのぼる
+        int count = 0;
+        if(depthstart<5){
+            if(!weightmap.containsKey(category)&&!category.equals("Category:隠しカテゴリ")&&!category.contains("\\\\")&&!category.contains("/")&&!category.contains(",_")) {
+                for(String next:getcategoriescat(category).getBelowcat()){
+                        catshitaweightop(weightmap,next,depthstart+1);
+                        if(next.contains(category.substring(9))&&!next.contains("\\\\")&&!next.contains("/")&&!next.contains(",_")){
+                            count++;
+                        }
                 }
 
             }
+        }if(count>4) {
+            weightmap.put(category.substring(9),count);//Category:って部分抜きで記憶
         }
     }
 
