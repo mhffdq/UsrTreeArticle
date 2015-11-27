@@ -195,6 +195,7 @@ public class WikiNote {
     }
 
     private Set<String> getcatope(String catename){//カテゴリが属している
+        System.out.println(catename);
         final String TARGET_HOST = "https://ja.wikipedia.org/w/api.php?action=query&prop=categories&format=xml&climit=500&titles=";
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = null;
@@ -247,8 +248,19 @@ public class WikiNote {
         }
     }
 
-    public Map<String,Integer> catshitaweight(){
-        Map<String,Integer> weightmap = new HashMap<String, Integer>(800);
+    public int getbunyacount(String cat){
+        int count = 0;
+        for(String bcat:getcategoriescat(cat).getBelowcat()){
+            if(bcat.contains(cat)){
+              count++;
+            }
+        }
+        return count;
+    }
+
+
+    public Map<String,Integer> catshitaweight(){//深さ優先探索 幅優先にして深いほど高い重みにする
+        Map<String,Integer> weightmap = new HashMap<String, Integer>(80000);
 
 
         File catweightfile = new File("./Catshitaweight");
@@ -270,7 +282,9 @@ public class WikiNote {
                 e.printStackTrace();
             }
         }else{
-            catshitaweightop(weightmap, "Category:主要カテゴリ", 0);
+            Set<String> set = new HashSet<String>();
+            set.add("Category:主要カテゴリ");
+            catshitaweightopwidth(weightmap, set, 0);
             Output.outputbinary(catweightfile,weightmap);
         }
         return weightmap;
@@ -278,12 +292,12 @@ public class WikiNote {
 
 
 
-    private void catshitaweightop(Map<String,Integer>weightmap,String category,int depthstart){//カテゴリを下にさかのぼる
+    private void catshitaweightopdepth(Map<String,Integer>weightmap,String category,int depthstart){//カテゴリを下にさかのぼる(深さ優先)
         int count = 0;
         if(depthstart<5){
             if(!weightmap.containsKey(category)&&!category.equals("Category:隠しカテゴリ")&&!category.contains("\\\\")&&!category.contains("/")&&!category.contains(",_")) {
                 for(String next:getcategoriescat(category).getBelowcat()){
-                        catshitaweightop(weightmap,next,depthstart+1);
+                        catshitaweightopdepth(weightmap,next,depthstart+1);
                         if(next.contains(category.substring(9))&&!next.contains("\\\\")&&!next.contains("/")&&!next.contains(",_")){
                             count++;
                         }
@@ -291,7 +305,22 @@ public class WikiNote {
 
             }
         }if(count>4) {
-            weightmap.put(category.substring(9),count);//Category:って部分抜きで記憶
+            weightmap.put(category.substring(9),depthstart);//Category:って部分抜きで記憶
+        }
+    }
+
+    private void catshitaweightopwidth(Map<String,Integer>weightmap,Set<String> categories,int depthstart){//カテゴリを下にさかのぼる(幅優先)
+        Set<String> nextset = new HashSet<String>();
+        for(String cate:categories){
+            if(!cate.equals("Category:隠しカテゴリ")&&!cate.contains("\\\\")&&!cate.contains("/")&&!cate.contains(",_")&&!cate.contains("*")&&!cate.contains(",_")&&!cate.contains("?")) {
+                Set<String> tempset = getcategoriescat(cate).getBelowcat();
+                weightmap.put(cate, depthstart);
+                nextset.addAll(tempset);
+            }
+        }
+        nextset.removeAll(weightmap.keySet());
+        if(depthstart<6) {
+            catshitaweightopwidth(weightmap, nextset, depthstart + 1);
         }
     }
 

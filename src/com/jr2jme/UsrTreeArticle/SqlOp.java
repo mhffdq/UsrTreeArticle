@@ -4,6 +4,8 @@ package com.jr2jme.UsrTreeArticle;
  * Created by K.H on 2015/06/29.
  */
 
+import com.teradata.jdbc.jdbc_4.ifsupport.Result;
+
 import java.sql.*;
 
 public class SqlOp {
@@ -11,6 +13,9 @@ public class SqlOp {
     PreparedStatement sttitle = null;
     PreparedStatement stnode = null;
     PreparedStatement stcomment =null;
+    PreparedStatement stperson =null;
+    PreparedStatement stterm =null;
+    PreparedStatement stgetperson =null;
 
     Connection conn = null;
     Integer id;
@@ -29,6 +34,9 @@ public class SqlOp {
                 stcomment = conn.prepareStatement(
                         "INSERT INTO db_development.comments (name,date,arttitle,text,created_at,updated_at) VALUES (?,?,?,?,?,?)"
                 );
+                stperson = conn.prepareStatement("INSERT INTO db_development.people (name,created_at,updated_at) VALUES (?,?,?)");
+                stterm = conn.prepareStatement("INSERT INTO db_development.terms (term,personid,created_at,updated_at) VALUES (?,?,?,?)");
+                stgetperson = conn.prepareStatement("SELECT * FROM db_development.people WHERE name = ?");
             }
             else if(flag==2){
                 conn = DriverManager.getConnection("jdbc:mysql://localhost", "user_production", "pass_production");
@@ -40,6 +48,11 @@ public class SqlOp {
                 stcomment = conn.prepareStatement(
                         "INSERT INTO db_production.comments (name,date,arttitle,text,created_at,updated_at) VALUES (?,?,?,?,?,?)"
                 );
+
+                stperson = conn.prepareStatement("INSERT INTO db_production.people (name,created_at,updated_at) VALUES (?,?,?)");
+                stterm = conn.prepareStatement("INSERT INTO db_production.terms (term,personid,created_at,updated_at) VALUES (?,?,?,?)");
+                stgetperson = conn.prepareStatement("SELECT * FROM production.people WHERE name = ?");
+
             }
             conn.setAutoCommit(false);
         } catch (ClassNotFoundException e) {
@@ -153,9 +166,60 @@ public class SqlOp {
             stedge.executeBatch();
             stnode.executeBatch();
             stcomment.executeBatch();
+            stterm.executeBatch();
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
+
+
+
+    public void insert_term(String term,Integer personid){//単語登録
+        try {
+            stterm.setString(1, term);
+            stterm.setInt(2,personid);
+            stterm.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+            stterm.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+            stterm.addBatch();
+            if(i>100){
+                stterm.executeBatch();
+                conn.commit();
+                i=0;
+            }
+            i++;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void insert_person(String name){//単語で表される人登録
+        try {
+            stperson.setString(1, name);
+            stperson.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+            stperson.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+            stperson.execute();
+            conn.commit();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ResultSet get_person(String name){//単語で表される人登録
+        ResultSet rs=null;
+        try {
+            stgetperson.setString(1, name);
+            rs = stgetperson.executeQuery();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return  rs;
+
+    }
+
+
+
 }

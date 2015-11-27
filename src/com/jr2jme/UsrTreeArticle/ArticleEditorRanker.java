@@ -103,7 +103,7 @@ public class ArticleEditorRanker {
 
 
 
-        return catdisvectfidf(usercat);
+        return catdisveccatminor2(usercat);
 
 
     }
@@ -182,9 +182,103 @@ public class ArticleEditorRanker {
             for(Token tok:tokens){
                 if(tok.getPartOfSpeech().contains("名詞")){
                     if(weightmap.containsKey(tok.getSurfaceForm())) {
-                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * weightmap.get(tok.getSurfaceForm()));
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * 10);
                     }else{
                         tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() );
+                    }
+                }
+            }
+        }
+        return tf.getTf();
+    }
+
+    private static Map<String,Double> catdisveccatminor(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
+        WikiNote wikiNote = new WikiNote();
+        Map<String,Integer> weightmap = wikiNote.catshitaweight();
+        Tokenizer tokenizer = Tokenizer.builder().build();
+
+        Feature tf = new Feature(1);
+
+        //この辺変更点
+        Map<String,Integer> newweight = new HashMap<String, Integer>();
+        for(Map.Entry<String,Integer>en:weightmap.entrySet()){
+            List<Token> tokens = tokenizer.tokenize(en.getKey());
+            for(Token tok:tokens){
+                if(tok.getPartOfSpeech().contains("名詞")){
+                    if(newweight.containsKey(tok.getSurfaceForm())){
+                        newweight.put(tok.getSurfaceForm(),newweight.get(tok.getSurfaceForm())+en.getValue());
+                    }else{
+                        newweight.put(tok.getSurfaceForm(),en.getValue());
+                    }
+                }
+            }
+
+        }
+
+
+        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
+
+            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
+
+            for(Token tok:tokens){
+                if(tok.getPartOfSpeech().contains("名詞")){
+                    if(newweight.containsKey(tok.getSurfaceForm())) {
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * newweight.get(tok.getSurfaceForm()));
+                    }else{
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue());
+                    }
+                }
+            }
+        }
+        return tf.getTf();
+    }
+
+    private static Map<String,Double> catdisveccatminor2(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
+        Categories cate = new Categories();
+        WikiNote wikiNote = new WikiNote();
+        Map<String,Integer> weightmap = wikiNote.catshitaweight();
+        Tokenizer tokenizer = Tokenizer.builder().build();
+
+        Feature tf = new Feature(1);
+
+
+
+        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
+
+            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
+
+            for(Token tok:tokens){
+                if(tok.getPartOfSpeech().contains("名詞")){
+                    if(weightmap.containsKey(tok.getSurfaceForm())) {
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * weightmap.get(tok.getSurfaceForm()) *cate.getCatidf().get(tok.getSurfaceForm()) );
+                    }else{
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue()*cate.getCatidf().get(tok.getSurfaceForm()));
+                    }
+                }
+            }
+        }
+        return tf.getTf();
+    }
+    private static Map<String,Double> catdisveccatminor3(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
+        Categories cate = new Categories();
+        WikiNote wikiNote = new WikiNote();
+        Map<String,Integer> weightmap = wikiNote.catshitaweight();
+        Tokenizer tokenizer = Tokenizer.builder().build();
+
+        Feature tf = new Feature(1);
+
+
+
+        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
+
+            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
+
+            for(Token tok:tokens){
+                if(tok.getPartOfSpeech().contains("名詞")){
+                    if(weightmap.containsKey(tok.getSurfaceForm())) {
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * 5 *cate.getCatidf().get(tok.getSurfaceForm()) );
+                    }else{
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue()*cate.getCatidf().get(tok.getSurfaceForm()));
                     }
                 }
             }

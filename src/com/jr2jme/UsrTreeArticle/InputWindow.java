@@ -5,6 +5,8 @@ import com.jr2jme.UsrTreeArticle.Util.MaptoList;
 import com.jr2jme.UsrTreeArticle.Util.Feature;
 
 import java.io.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 public class InputWindow {
@@ -13,7 +15,8 @@ public class InputWindow {
     SqlOp sq = null;
 	public static void main(String[] args) throws IOException {
         //Analyzer an = new Analyzer();
-        InputWindow inter = new InputWindow();
+        //InputWindow inter = new InputWindow();
+        //String personname = "ごまふあざ";
         //inter.test();
         //com.jr2jme.UsrTreeArticle.Util.WikiNote.parsepageid("37564635");
         //何を迷っている
@@ -21,36 +24,66 @@ public class InputWindow {
         //System.out.println(ArticleEditorRanker.editoreditorrank("あるうぃんす","ゴンベイ"));
         //System.out.println(ArticleEditorRanker.artartdrank("江戸しぐさ","Linux"));//こっからどうするか
 
-        /*WikiNote wikiNote = new WikiNote();
+        WikiNote wikiNote = new WikiNote();
         for(Map.Entry<String,Integer> en:wikiNote.catshitaweight().entrySet()){
             System.out.println(en);
-        }*/
+        }
         //System.out.println(wikiNote.catshitaweight().size());
 
-        Feature editfe = new Feature(ArticleEditorRanker.testuserarticle("ごまふあざ"));//編集者の特徴ベクトル的なもの
-        Feature editfeanother = new Feature(ArticleEditorRanker.testuserarticlecat("ごまふあざ"));
+        //Feature editfe = new Feature(ArticleEditorRanker.testuserarticle(personname));//編集者の特徴ベクトル的なもの
+        /*Feature editfeanother = new Feature(ArticleEditorRanker.testuserarticlecat(personname));
+        SqlOp sq = new SqlOp(1);
+        //sq.insert_person(personname);
+        int id=0;
+        try {
+            ResultSet rs = sq.get_person(personname);
+            rs.next();
+            id = rs.getInt("id");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         int c = 0;
         int x = 0;
         List<String> list = new ArrayList<String>();
-        List<Integer> intlist = new ArrayList<Integer>();
+        List<Integer> intlist = new ArrayList<Integer>();/*
         for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfe.getTfidf())){
-            if(c==75||c==60||c==1||c==49||c==57||c==35||c==99||c==39||c==70||c==34||c==77||c==25||c==28||c==41||c==5||c==17||c==2||c==71||c==20||c==80) {
+            //if(c==75||c==60||c==1||c==49||c==57||c==35||c==99||c==39||c==70||c==34||c==77||c==25||c==28||c==41||c==5||c==17||c==2||c==71||c==20||c==80) {
+            //sq.insert_term(entry.getKey(),id);
+            System.out.println(entry.getKey()+c);
+            x++;
+            list.add(entry.getKey());
+            intlist.add(x);
+            //System.out.println("<li class=\"ui-state-default\">" + entry.getKey() + "<span>" + x + "</span>");
+            //}
+            c++;
+            if(c>20){
+                c=0;
+                break;
+            }
+        }*/
+        /*
+        for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfeanother.getTfidf())){
+            //if(c==75||c==60||c==1||c==49||c==57||c==35||c==99||c==39||c==70||c==34||c==77||c==25||c==28||c==41||c==5||c==17||c==2||c==71||c==20||c==80) {
+                //sq.insert_term(entry.getKey(),id);
+            System.out.println(entry.getKey()+c);
                 x++;
                 list.add(entry.getKey());
                 intlist.add(x);
                 //System.out.println("<li class=\"ui-state-default\">" + entry.getKey() + "<span>" + x + "</span>");
-            }
+            //}
             c++;
-            if(c>100){
-                break;
+            if(c>20){
+               break;
             }
-        }
-        for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfeanother.getTfidf())){
+        }*/
+        //sq.insert_batch();
+        /*for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfeanother.getTfidf())){
             if(list.contains(entry.getKey())){
                 System.out.println(entry.getKey()+(list.indexOf(entry.getKey())+1));
             }
-        }
+        }*/
 
 
         //考えてるだけじゃわかる兄から何かやってみる
