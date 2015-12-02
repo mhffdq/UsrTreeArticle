@@ -15,76 +15,59 @@ public class InputWindow {
     SqlOp sq = null;
 	public static void main(String[] args) throws IOException {
         //Analyzer an = new Analyzer();
-        //InputWindow inter = new InputWindow();
-        //String personname = "ごまふあざ";
+        InputWindow inter = new InputWindow();
+        String personname = "ごまふあざ";
         //inter.test();
-        //com.jr2jme.UsrTreeArticle.Util.WikiNote.parsepageid("37564635");
         //何を迷っている
         //System.out.println(ArticleEditorRanker.articleredrank("UNIX","ごまふあざ"));//こっからどうするか
         //System.out.println(ArticleEditorRanker.editoreditorrank("あるうぃんす","ゴンベイ"));
         //System.out.println(ArticleEditorRanker.artartdrank("江戸しぐさ","Linux"));//こっからどうするか
-
-        WikiNote wikiNote = new WikiNote();
+        //一発逆転の何か
+//なにもきにしたきなあぢｆｊｊ何も思いつかないｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｄｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆｆ
+        /*WikiNote wikiNote = new WikiNote();
         for(Map.Entry<String,Integer> en:wikiNote.catshitaweight().entrySet()){
             System.out.println(en);
-        }
-        //System.out.println(wikiNote.catshitaweight().size());
+        }*/
+
+
+
+
 
         //Feature editfe = new Feature(ArticleEditorRanker.testuserarticle(personname));//編集者の特徴ベクトル的なもの
-        /*Feature editfeanother = new Feature(ArticleEditorRanker.testuserarticlecat(personname));
-        SqlOp sq = new SqlOp(1);
-        //sq.insert_person(personname);
-        int id=0;
-        try {
-            ResultSet rs = sq.get_person(personname);
-            rs.next();
-            id = rs.getInt("id");
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        //Feature editfeanother = new Feature(ArticleEditorRanker.testuserarticlecat(personname));
+        /*SqlOp sq = new SqlOp(1);
+        sq.insert_person(personname);
+        int id=sq.get_personid(personname);
 
         int c = 0;
         int x = 0;
         List<String> list = new ArrayList<String>();
-        List<Integer> intlist = new ArrayList<Integer>();/*
+        List<Integer> intlist = new ArrayList<Integer>();
         for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfe.getTfidf())){
-            //if(c==75||c==60||c==1||c==49||c==57||c==35||c==99||c==39||c==70||c==34||c==77||c==25||c==28||c==41||c==5||c==17||c==2||c==71||c==20||c==80) {
-            //sq.insert_term(entry.getKey(),id);
-            System.out.println(entry.getKey()+c);
-            x++;
-            list.add(entry.getKey());
-            intlist.add(x);
-            //System.out.println("<li class=\"ui-state-default\">" + entry.getKey() + "<span>" + x + "</span>");
-            //}
-            c++;
-            if(c>20){
-                c=0;
-                break;
-            }
-        }*/
-        /*
-        for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfeanother.getTfidf())){
-            //if(c==75||c==60||c==1||c==49||c==57||c==35||c==99||c==39||c==70||c==34||c==77||c==25||c==28||c==41||c==5||c==17||c==2||c==71||c==20||c==80) {
+            if(c==75||c==60||c==1||c==49||c==57||c==35||c==99||c==39||c==70||c==34||c==77||c==25||c==28||c==41||c==5||c==17||c==2||c==71||c==20||c==80) {
                 //sq.insert_term(entry.getKey(),id);
-            System.out.println(entry.getKey()+c);
+            //sq.insert_termpropose(entry.getKey(),id,c,1);
+                System.out.println(entry.getKey()+c);
                 x++;
                 list.add(entry.getKey());
                 intlist.add(x);
-                //System.out.println("<li class=\"ui-state-default\">" + entry.getKey() + "<span>" + x + "</span>");
-            //}
+            //System.out.println("<li class=\"ui-state-default\">" + entry.getKey() + "<span>" + x + "</span>");
+            }
             c++;
-            if(c>20){
-               break;
+            if(x>4){
+                break;
             }
-        }*/
+        }
+        c=1;
         //sq.insert_batch();
-        /*for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfeanother.getTfidf())){
+        for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfe.getTfidf())){
             if(list.contains(entry.getKey())){
-                System.out.println(entry.getKey()+(list.indexOf(entry.getKey())+1));
+                sq.insert_termpropose(entry.getKey(),id,c,1);
+                c++;
             }
-        }*/
 
+        }
+        sq.insert_batch();
 
         //考えてるだけじゃわかる兄から何かやってみる
         //何をやったらいいかな
@@ -92,6 +75,9 @@ public class InputWindow {
         //表示を考える
 
         //何がしたいのか考える
+//何したらいいかな
+//なんで他の人は何をしたらいいのかわかるのか 全然わからない
+//悩んでも悩んでも
 
         //明日，誰と議論しているかわかるようにkoreka
 
@@ -124,6 +110,7 @@ public class InputWindow {
 
         System.out.println(wikinote.catrel(catdepth,catdepth2));*/
         //inter.mainstream();
+        System.out.println(inter.result("ごまふあざ"));
 
 		System.exit(0);
 	}
@@ -149,6 +136,35 @@ public class InputWindow {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+    }
+
+    public double result(String editor){
+        SqlOp sqop = new SqlOp(1);
+        int personid =sqop.get_personid(editor);
+
+        ResultSet rs = sqop.get_termrankresult(personid);
+        ResultSet rsexp = sqop.get_termranktype(personid,1);
+        List<String> rank = new ArrayList<String>();
+        Map<String,Integer> blackrx = new HashMap<String, Integer>();
+        try {
+            while(rs.next()){
+                rank.add(rs.getString("term"));
+                System.out.println(rs.getString("term"));
+            }
+            while(rsexp.next()){
+                blackrx.put(rsexp.getString("term"),rsexp.getInt("rank"));
+                System.out.println(rsexp.getString("term"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        int temp = 0;
+        for(Map.Entry<String,Integer> entry:blackrx.entrySet()){
+            System.out.println(entry.getValue()+":"+rank.indexOf((entry.getKey())));
+            temp+=Math.pow((entry.getValue()-(rank.indexOf(entry.getKey())+1)),2);
+        }
+        return 1-(6*temp/(Math.pow(rank.size(),3)-rank.size()));
 
     }
 
@@ -299,10 +315,6 @@ public class InputWindow {
         graphedit();
 
     }
-
-
-
-
 
 
 

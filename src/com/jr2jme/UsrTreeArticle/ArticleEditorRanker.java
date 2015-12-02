@@ -1,7 +1,6 @@
 package com.jr2jme.UsrTreeArticle;
 
 import com.jr2jme.UsrTreeArticle.Util.Categories;
-import com.jr2jme.UsrTreeArticle.Util.MaptoList;
 import com.jr2jme.UsrTreeArticle.Util.Feature;
 import org.atilika.kuromoji.Token;
 import org.atilika.kuromoji.Tokenizer;
@@ -65,67 +64,26 @@ public class ArticleEditorRanker {
     }
 
     public static Map<String,Double> testuserarticle(String usrname){//userを入力すると，そのユーザの属性をカテゴリで表してくれそうなやつ
-
-
-
-
         List<Map<String,Integer>> listmap = mainop(usrname);
-
-// この２行で解析できる
-
-        //List<Map.Entry> val = valueSort(usercat);
 //全体での出現頻度とか見るゾーン
         Map<String,Double> usercat = catvec(listmap);
-
-
-
-
         return catdisvec(usercat);
-
-
-
     }
 
     public static Map<String,Double>  testuserarticletfidf(String usrname){//userを入力すると，そのユーザの属性をカテゴリで表してくれそうなやつ
+        //tfidfというかカテゴリに使われている単語の逆頻度
         List<Map<String,Integer>> listmap = mainop(usrname);
-
-        /*WikiNote wikinote = new WikiNote();
-        WikiUsernote wikiusernotet=wikinote.getnotelist(usrname);//useridと編集したノートページの集合が帰ってくる
-        List<Map<String,Integer>> listmap = new ArrayList<Map<String, Integer>>(wikiusernotet.getNotemap().size());
-        for(String artname:wikiusernotet.getNotemap()){
-            Set<String> name = new HashSet<String>();
-            name.add(artname);
-            listmap.add(wikinote.widcategories(name));
-        }*/
-
         Map<String,Double> usercat = catvec(listmap);
-// この２行で解析できる
-
-
-
-        return catdisveccatminor2(usercat);
-
-
+        return catdisvectfidf(usercat);//何かないか
     }
 
     public static Map<String,Double>  testuserarticlecat(String usrname){//userを入力すると，そのユーザの属性をカテゴリで表してくれそうなやつ
 
         List<Map<String,Integer>> listmap = mainop(usrname);
-/*        WikiNote wikinote = new WikiNote();
-        WikiUsernote wikiusernotet=wikinote.getnotelist(usrname);//useridと編集したノートページの集合が帰ってくる
-        List<Map<String,Integer>> listmap = new ArrayList<Map<String, Integer>>(wikiusernotet.getNotemap().size());
-        for(String artname:wikiusernotet.getNotemap()){
-            Set<String> name = new HashSet<String>();
-            name.add(artname);
-            listmap.add(wikinote.widcategories(name));
-        }*/
 
-        Map<String,Double> usercat = catvec(listmap);
-// この２行で解析できる
-
-
-
-        return catdisveccat(usercat);
+        Map<String,Double> usercat = catvec(listmap);//カテゴリの深さを利用するならこれ系
+        return catdisveccat(usercat);//難しいことを考えすぎない//ここの関数をいじると変わる
+        //やってから考えよう
 
 
     }
@@ -277,6 +235,32 @@ public class ArticleEditorRanker {
                 if(tok.getPartOfSpeech().contains("名詞")){
                     if(weightmap.containsKey(tok.getSurfaceForm())) {
                         tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * 5 *cate.getCatidf().get(tok.getSurfaceForm()) );
+                    }else{
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue()*cate.getCatidf().get(tok.getSurfaceForm()));
+                    }
+                }
+            }
+        }
+        return tf.getTf();
+    }
+
+    private static Map<String,Double> catdisveccatminor4(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
+        Categories cate = new Categories();//階層の深さ，下にある同じ名前が含まれたカテゴリ数とかを使う版
+        WikiNote wikiNote = new WikiNote();
+        Map<String,Integer> weightmap = wikiNote.catshitaweight();//カテゴリと深さ
+        Tokenizer tokenizer = Tokenizer.builder().build();
+
+        Feature tf = new Feature(1);
+        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
+
+            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
+
+            for(Token tok:tokens){
+                if(tok.getPartOfSpeech().contains("名詞")){
+                    if(weightmap.containsKey(tok.getSurfaceForm())) {
+                        int shita =wikiNote.getbunyacount(tok.getSurfaceForm());//分野数
+                        int depth = weightmap.get(tok.getSurfaceForm());
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * depth*shita *cate.getCatidf().get(tok.getSurfaceForm()) );
                     }else{
                         tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue()*cate.getCatidf().get(tok.getSurfaceForm()));
                     }

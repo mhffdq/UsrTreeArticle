@@ -248,32 +248,29 @@ public class WikiNote {
         }
     }
 
-    public int getbunyacount(String cat){
-        int count = 0;
+    public int getbunyacount(String cat){//分野名っぽいカテゴリを取得
+        int count = 0;//上の方にあるほど分野は大きくなる
         for(String bcat:getcategoriescat(cat).getBelowcat()){
             if(bcat.contains(cat)){
               count++;
             }
         }
         return count;
-    }
+    }//どうしようなあほんま
+    //理想 だんだん 細かくなっていく感じ
+    //一つ見つけたら下げる？ひとつにしぼるのはどうなのか
 
 
-    public Map<String,Integer> catshitaweight(){//深さ優先探索 幅優先にして深いほど高い重みにする
+    public Map<String,Integer> catshitaweight(){//深いほど高い重み 同じ分野のカテゴリを持つてきな関数はgetbunyacountを使う
         Map<String,Integer> weightmap = new HashMap<String, Integer>(80000);
-
-
         File catweightfile = new File("./Catshitaweight");
-
         if(catweightfile.exists()) {
             try {
                 FileInputStream input = new FileInputStream(catweightfile);
                 ObjectInputStream inObject = new ObjectInputStream(input);
-
                 weightmap= (Map<String,Integer>) inObject.readObject();
                 inObject.close();
                 input.close();
-
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -284,8 +281,8 @@ public class WikiNote {
         }else{
             Set<String> set = new HashSet<String>();
             set.add("Category:主要カテゴリ");
-            catshitaweightopwidth(weightmap, set, 0);
-            Output.outputbinary(catweightfile,weightmap);
+            catshitaweightopwidth(weightmap, set, 0);//widthで幅優先 depthにすると深さ優先 一番近いのを深さとしているから幅優先
+            Output.outputbinary(catweightfile,weightmap);//どうでもいいことを考えすぎているのかな
         }
         return weightmap;
     }
