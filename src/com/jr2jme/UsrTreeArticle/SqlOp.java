@@ -300,14 +300,14 @@ public class SqlOp {
     }
 
     public ResultSet get_termranktype(int name,int type){//人が選んだ単語の順番取得(引数は知りたい編集者名)
-        PreparedStatement stgettermrank =null;//こっちは手法で求めたランク
+         PreparedStatement stgettermrank =null;//こっちは手法で求めたランク
 //いまのところ不整合があるから，挿入のやつをもっとシンプルに
         try {
             if(isdev) {
-                stgettermrank = conn.prepareStatement("SELECT term,rank FROM db_development.termproposes WHERE personid = ? ");
+                stgettermrank = conn.prepareStatement("SELECT term,rank FROM db_development.termproposes WHERE personid = ? AND typeid = ?");
             }
             else{
-                stgettermrank = conn.prepareStatement("SELECT term,rank FROM db_production.termproposes WHERE personid = ?");
+                stgettermrank = conn.prepareStatement("SELECT term,rank FROM db_production.termproposes WHERE personid = ? AND typeid = ?");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -315,11 +315,39 @@ public class SqlOp {
         ResultSet rs=null;
         try {
             stgettermrank.setInt(1, name);
+            stgettermrank.setInt(2,type);
             rs = stgettermrank.executeQuery();
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return  rs;
+
+    }
+
+    public boolean termcheck(int name,String term){//人が選んだ単語の順番取得(引数は知りたい編集者名)
+        PreparedStatement checkkoubun =null;//こっちは手法で求めたランク
+//いまのところ不整合があるから，挿入のやつをもっとシンプルに
+        try {
+            if(isdev) {
+                checkkoubun = conn.prepareStatement("SELECT * FROM db_development.terms WHERE personid = ? AND term =?");
+            }
+            else{
+                checkkoubun = conn.prepareStatement("SELECT * FROM db_production.terms WHERE personid = ? AND term =?");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        ResultSet rs=null;
+        boolean yes=false;
+        try {
+            checkkoubun.setInt(1, name);
+            checkkoubun.setString(2, term);
+            rs = checkkoubun.executeQuery();
+            yes=  rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return yes;
 
     }
 

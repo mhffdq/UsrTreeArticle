@@ -17,6 +17,8 @@ public class InputWindow {
         //Analyzer an = new Analyzer();
         InputWindow inter = new InputWindow();
         String personname = "ごまふあざ";
+        SqlOp sqlOp = new SqlOp(1);
+        System.out.println(sqlOp.termcheck(8,"家"));
         //inter.test();
         //何を迷っている
         //System.out.println(ArticleEditorRanker.articleredrank("UNIX","ごまふあざ"));//こっからどうするか
@@ -28,41 +30,50 @@ public class InputWindow {
         for(Map.Entry<String,Integer> en:wikiNote.catshitaweight().entrySet()){
             System.out.println(en);
         }*/
+//明日は一通り試してみるか
+//単語が登録されているかどうかをみて登録する仕組み
+        //上から20個とランダムに下の方も
 
 
 
-
-
-        //Feature editfe = new Feature(ArticleEditorRanker.testuserarticle(personname));//編集者の特徴ベクトル的なもの
-        //Feature editfeanother = new Feature(ArticleEditorRanker.testuserarticlecat(personname));
-        /*SqlOp sq = new SqlOp(1);
+        Feature editfe = new Feature(ArticleEditorRanker.testuserarticle(personname));//編集者の特徴ベクトル的なもの
+        Feature editfecat = new Feature(ArticleEditorRanker.testuserarticlecat(personname));//カテゴリの出現頻度の逆頻度をかける
+        Feature editfe1 = new Feature(ArticleEditorRanker.testuserarticlecat(personname));//
+        SqlOp sq = new SqlOp(1);
         sq.insert_person(personname);
         int id=sq.get_personid(personname);
-
-        int c = 0;
+//おどろくほど進まない
         int x = 0;
         List<String> list = new ArrayList<String>();
-        List<Integer> intlist = new ArrayList<Integer>();
-        for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfe.getTfidf())){
-            if(c==75||c==60||c==1||c==49||c==57||c==35||c==99||c==39||c==70||c==34||c==77||c==25||c==28||c==41||c==5||c==17||c==2||c==71||c==20||c==80) {
-                //sq.insert_term(entry.getKey(),id);
+        Set<Integer> intset =inter.genrand(20);
+        List<Map.Entry>hoge =MaptoList.valueSort(editfe.getTfidf());
+        for(Map.Entry<String,Double> entry:hoge){
+            if(intset.contains(hoge.indexOf(entry))) {
+                if(!sq.termcheck(id,entry.getKey())){
+                    sq.insert_term(entry.getKey(),id);
+                }
             //sq.insert_termpropose(entry.getKey(),id,c,1);
-                System.out.println(entry.getKey()+c);
+                System.out.println(entry.getKey());
                 x++;
                 list.add(entry.getKey());
-                intlist.add(x);
             //System.out.println("<li class=\"ui-state-default\">" + entry.getKey() + "<span>" + x + "</span>");
             }
-            c++;
-            if(x>4){
+            if(x>20){
                 break;
             }
         }
-        c=1;
         //sq.insert_batch();
+        int c=0;
         for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfe.getTfidf())){
             if(list.contains(entry.getKey())){
                 sq.insert_termpropose(entry.getKey(),id,c,1);
+                c++;
+            }
+
+        }
+        for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfecat.getTfidf())){
+            if(list.contains(entry.getKey())){
+                sq.insert_termpropose(entry.getKey(),id,c,2);
                 c++;
             }
 
@@ -110,7 +121,7 @@ public class InputWindow {
 
         System.out.println(wikinote.catrel(catdepth,catdepth2));*/
         //inter.mainstream();
-        System.out.println(inter.result("ごまふあざ"));
+        //System.out.println(inter.result("ごまふあざ"));
 
 		System.exit(0);
 	}
@@ -118,6 +129,18 @@ public class InputWindow {
     //やりたいのは，nanika
     //もっと簡単に考える
     //簡単とは何か
+    public Set<Integer> genrand(int x){//数字の数だけ生成（0から99）X個
+        Set<Integer> randint = new HashSet<Integer>(x);
+        Random random = new Random();
+        int c=0;
+        while(c<x){
+            int temp = random.nextInt(100);
+            if(randint.add(temp)){
+                c++;
+            }
+        }
+        return randint;
+    }
 
 
     public void test(){

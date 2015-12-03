@@ -88,8 +88,26 @@ public class ArticleEditorRanker {
 
     }
 
-    private static Map<String,Double> catdisvec(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
+    public static List<Map<String,Double>> testuserarticleall(String usrname){//全てやって，リストで返す
+        List<Map<String,Double>> retlist = new ArrayList<Map<String, Double>>();
+        List<Map<String,Integer>> listmap = mainop(usrname);
+        Map<String,Double> usercat = catvec(listmap);//カテゴリの深さを利用するならこれ系
 
+        retlist.add(catdisvec(usercat));//よく使われているかだけ
+        retlist.add(catdisvectfidf(usercat));//貴重なほど特徴
+        retlist.add(catdisveccat(usercat));//深いほど特徴
+        retlist.add(catdisvecbunya(usercat));
+        retlist.add(catdisveccatminor1(usercat));//tfidfとcatの組み合わせ
+        retlist.add(catdisveccatminor2(usercat));//tfidfとbunyaの組み合わせ
+        retlist.add(catdisveccatminor3(usercat));//catと分野
+        retlist.add(catdisveccatminor4(usercat));//全部
+
+        return  retlist;
+
+    }
+
+    private static Map<String,Double> catdisvec(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
+//基本計
         Tokenizer tokenizer = Tokenizer.builder().build();
 
         Feature tf = new Feature(1);
@@ -108,7 +126,7 @@ public class ArticleEditorRanker {
     }
 
     private static Map<String,Double> catdisvectfidf(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
-
+//カテゴリに使われる単語の頻度を考慮
         Categories cate = new Categories();
         Tokenizer tokenizer = Tokenizer.builder().build();
 
@@ -140,7 +158,7 @@ public class ArticleEditorRanker {
             for(Token tok:tokens){
                 if(tok.getPartOfSpeech().contains("名詞")){
                     if(weightmap.containsKey(tok.getSurfaceForm())) {
-                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * 10);
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * weightmap.get(tok.getSurfaceForm()));//上の方にあるカテゴリを単純に重く
                     }else{
                         tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() );
                     }
@@ -150,102 +168,7 @@ public class ArticleEditorRanker {
         return tf.getTf();
     }
 
-    private static Map<String,Double> catdisveccatminor(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
-        WikiNote wikiNote = new WikiNote();
-        Map<String,Integer> weightmap = wikiNote.catshitaweight();
-        Tokenizer tokenizer = Tokenizer.builder().build();
-
-        Feature tf = new Feature(1);
-
-        //この辺変更点
-        Map<String,Integer> newweight = new HashMap<String, Integer>();
-        for(Map.Entry<String,Integer>en:weightmap.entrySet()){
-            List<Token> tokens = tokenizer.tokenize(en.getKey());
-            for(Token tok:tokens){
-                if(tok.getPartOfSpeech().contains("名詞")){
-                    if(newweight.containsKey(tok.getSurfaceForm())){
-                        newweight.put(tok.getSurfaceForm(),newweight.get(tok.getSurfaceForm())+en.getValue());
-                    }else{
-                        newweight.put(tok.getSurfaceForm(),en.getValue());
-                    }
-                }
-            }
-
-        }
-
-
-        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
-
-            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
-
-            for(Token tok:tokens){
-                if(tok.getPartOfSpeech().contains("名詞")){
-                    if(newweight.containsKey(tok.getSurfaceForm())) {
-                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * newweight.get(tok.getSurfaceForm()));
-                    }else{
-                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue());
-                    }
-                }
-            }
-        }
-        return tf.getTf();
-    }
-
-    private static Map<String,Double> catdisveccatminor2(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
-        Categories cate = new Categories();
-        WikiNote wikiNote = new WikiNote();
-        Map<String,Integer> weightmap = wikiNote.catshitaweight();
-        Tokenizer tokenizer = Tokenizer.builder().build();
-
-        Feature tf = new Feature(1);
-
-
-
-        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
-
-            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
-
-            for(Token tok:tokens){
-                if(tok.getPartOfSpeech().contains("名詞")){
-                    if(weightmap.containsKey(tok.getSurfaceForm())) {
-                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * weightmap.get(tok.getSurfaceForm()) *cate.getCatidf().get(tok.getSurfaceForm()) );
-                    }else{
-                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue()*cate.getCatidf().get(tok.getSurfaceForm()));
-                    }
-                }
-            }
-        }
-        return tf.getTf();
-    }
-    private static Map<String,Double> catdisveccatminor3(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
-        Categories cate = new Categories();
-        WikiNote wikiNote = new WikiNote();
-        Map<String,Integer> weightmap = wikiNote.catshitaweight();
-        Tokenizer tokenizer = Tokenizer.builder().build();
-
-        Feature tf = new Feature(1);
-
-
-
-        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
-
-            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
-
-            for(Token tok:tokens){
-                if(tok.getPartOfSpeech().contains("名詞")){
-                    if(weightmap.containsKey(tok.getSurfaceForm())) {
-                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * 5 *cate.getCatidf().get(tok.getSurfaceForm()) );
-                    }else{
-                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue()*cate.getCatidf().get(tok.getSurfaceForm()));
-                    }
-                }
-            }
-        }
-        return tf.getTf();
-    }
-
-    private static Map<String,Double> catdisveccatminor4(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
-        Categories cate = new Categories();//階層の深さ，下にある同じ名前が含まれたカテゴリ数とかを使う版
+    private static Map<String,Double> catdisvecbunya(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
         WikiNote wikiNote = new WikiNote();
         Map<String,Integer> weightmap = wikiNote.catshitaweight();//カテゴリと深さ
         Tokenizer tokenizer = Tokenizer.builder().build();
@@ -259,8 +182,114 @@ public class ArticleEditorRanker {
                 if(tok.getPartOfSpeech().contains("名詞")){
                     if(weightmap.containsKey(tok.getSurfaceForm())) {
                         int shita =wikiNote.getbunyacount(tok.getSurfaceForm());//分野数
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * shita );//分野数を使う いろいろ買えてたから分野数単体のやつがないや
+                    }else{
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue());
+                    }
+                }
+            }
+        }
+        return tf.getTf();
+    }
+
+    private static Map<String,Double> catdisveccatminor1(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
+        WikiNote wikiNote = new WikiNote();
+        Map<String,Integer> weightmap = wikiNote.catshitaweight();//カテゴリと深さ
+        Tokenizer tokenizer = Tokenizer.builder().build();
+        Categories cate = new Categories();
+
+        Feature tf = new Feature(1);
+        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
+
+            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
+
+            for(Token tok:tokens){
+                if(tok.getPartOfSpeech().contains("名詞")){
+                    if(weightmap.containsKey(tok.getSurfaceForm())) {
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * weightmap.get(tok.getSurfaceForm())*cate.getCatidf().get(tok.getSurfaceForm()) );//分野数を使う いろいろ買えてたから分野数単体のやつがないや
+                    }else{
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue());
+                    }
+                }
+            }
+        }
+        return tf.getTf();
+    }
+
+
+
+    private static Map<String,Double> catdisveccatminor2(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
+        Categories cate = new Categories();//カテゴリと分野
+        WikiNote wikiNote = new WikiNote();
+        Map<String,Integer> weightmap = wikiNote.catshitaweight();
+        Tokenizer tokenizer = Tokenizer.builder().build();
+
+        Feature tf = new Feature(1);
+
+
+
+        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
+
+            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));//深さとよくある度を両方使用
+
+            for(Token tok:tokens){
+                if(tok.getPartOfSpeech().contains("名詞")){
+                    if(weightmap.containsKey(tok.getSurfaceForm())) {
+                        int shita =wikiNote.getbunyacount(tok.getSurfaceForm());//分野数
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * shita *cate.getCatidf().get(tok.getSurfaceForm()) );
+                    }else{
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue()*cate.getCatidf().get(tok.getSurfaceForm()));
+                    }
+                }
+            }
+        }
+        return tf.getTf();
+    }
+    private static Map<String,Double> catdisveccatminor3(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
+        Categories cate = new Categories();
+        WikiNote wikiNote = new WikiNote();
+        Map<String,Integer> weightmap = wikiNote.catshitaweight();//tfidfと分野
+        Tokenizer tokenizer = Tokenizer.builder().build();
+
+        Feature tf = new Feature(1);
+
+
+
+        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
+
+            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
+
+            for(Token tok:tokens){
+                if(tok.getPartOfSpeech().contains("名詞")){
+                    if(weightmap.containsKey(tok.getSurfaceForm())) {
+                        int shita =wikiNote.getbunyacount(tok.getSurfaceForm());//分野数
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * weightmap.get(tok.getSurfaceForm())*shita );//合成catとtfidfの
+                    }else{
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue());
+                    }
+                }
+            }
+        }
+        return tf.getTf();
+    }
+
+    private static Map<String,Double> catdisveccatminor4(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
+        Categories cate = new Categories();//階層の深さ，下にある同じ名前が含まれたカテゴリ数とかを使う版
+        WikiNote wikiNote = new WikiNote();
+        Map<String,Integer> weightmap = wikiNote.catshitaweight();//全部乗せ
+        Tokenizer tokenizer = Tokenizer.builder().build();
+
+        Feature tf = new Feature(1);
+        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
+
+            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
+
+            for(Token tok:tokens){
+                if(tok.getPartOfSpeech().contains("名詞")){
+                    if(weightmap.containsKey(tok.getSurfaceForm())) {
+                        int shita =wikiNote.getbunyacount(tok.getSurfaceForm());//分野数
                         int depth = weightmap.get(tok.getSurfaceForm());
-                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * depth*shita *cate.getCatidf().get(tok.getSurfaceForm()) );
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * depth*shita *cate.getCatidf().get(tok.getSurfaceForm()) );//分野数を使う いろいろ買えてたから分野数単体のやつがないや
                     }else{
                         tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue()*cate.getCatidf().get(tok.getSurfaceForm()));
                     }
@@ -285,7 +314,44 @@ public class ArticleEditorRanker {
         }
         return usercat;
     }
+    private static Map<String,Double> catdisveccatmadatukawanai(Map<String,Double> usercat){//カテゴリの距離をもらって，形態素解析して特徴ベクトルっぽく
+        WikiNote wikiNote = new WikiNote();
+        Map<String,Integer> weightmap = wikiNote.catshitaweight();//catとtfidf
+        Tokenizer tokenizer = Tokenizer.builder().build();
 
+        Feature tf = new Feature(1);
+
+        //この辺変更点  カテゴリを細かく分解してる・//とりあえずなかったことに
+        Map<String,Integer> newweight = new HashMap<String, Integer>();
+        for(Map.Entry<String,Integer>en:weightmap.entrySet()){
+            List<Token> tokens = tokenizer.tokenize(en.getKey());
+            for(Token tok:tokens){
+                if(tok.getPartOfSpeech().contains("名詞")){
+                    if(newweight.containsKey(tok.getSurfaceForm())){
+                        newweight.put(tok.getSurfaceForm(),newweight.get(tok.getSurfaceForm())+en.getValue());//深いほど高得点
+                    }else{
+                        newweight.put(tok.getSurfaceForm(),en.getValue());
+                    }
+                }
+            }
+
+        }
+        for(Map.Entry<String,Double> vv:usercat.entrySet()){//カテゴリ名と距離を基にした重み
+
+            List<Token> tokens = tokenizer.tokenize(vv.getKey().substring(9));
+
+            for(Token tok:tokens){
+                if(tok.getPartOfSpeech().contains("名詞")){
+                    if(newweight.containsKey(tok.getSurfaceForm())) {
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * newweight.get(tok.getSurfaceForm()));
+                    }else{
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue());
+                    }
+                }
+            }
+        }
+        return tf.getTf();
+    }
 
 
 
