@@ -249,7 +249,7 @@ public class WikiNote {
     }
 
     public int getbunyacount(String cat){//分野名っぽいカテゴリを取得
-        int count = 0;//上の方にあるほど分野は大きくなる
+        int count = 1;//下に同じ名前を含んだカテゴリがあるかどうかを確かめる
         for(String bcat:getcategoriescat(cat).getBelowcat()){
             if(bcat.contains(cat)){
               count++;

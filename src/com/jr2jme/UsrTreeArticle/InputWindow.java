@@ -17,8 +17,6 @@ public class InputWindow {
         //Analyzer an = new Analyzer();
         InputWindow inter = new InputWindow();
         String personname = "ごまふあざ";
-        SqlOp sqlOp = new SqlOp(1);
-        System.out.println(sqlOp.termcheck(8,"家"));
         //inter.test();
         //何を迷っている
         //System.out.println(ArticleEditorRanker.articleredrank("UNIX","ごまふあざ"));//こっからどうするか
@@ -37,47 +35,59 @@ public class InputWindow {
 
 
         Feature editfe = new Feature(ArticleEditorRanker.testuserarticle(personname));//編集者の特徴ベクトル的なもの
-        Feature editfecat = new Feature(ArticleEditorRanker.testuserarticlecat(personname));//カテゴリの出現頻度の逆頻度をかける
-        Feature editfe1 = new Feature(ArticleEditorRanker.testuserarticlecat(personname));//
+        List<Feature> editall = new ArrayList<Feature>();
+        for(Map<String,Double> ma :ArticleEditorRanker.testuserarticleall(personname)){//本当はArticleRankerのほうでやったほうがいいけどまあいいや
+            editall.add(new Feature(ma));
+        }
         SqlOp sq = new SqlOp(1);
-        sq.insert_person(personname);
+        try {
+            if(!sq.get_person(personname).next()) {
+                sq.insert_person(personname);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         int id=sq.get_personid(personname);
-//おどろくほど進まない
         int x = 0;
-        List<String> list = new ArrayList<String>();
+        Set<String> list = new HashSet<String>();
         Set<Integer> intset =inter.genrand(20);
         List<Map.Entry>hoge =MaptoList.valueSort(editfe.getTfidf());
-        for(Map.Entry<String,Double> entry:hoge){
-            if(intset.contains(hoge.indexOf(entry))) {
-                if(!sq.termcheck(id,entry.getKey())){
-                    sq.insert_term(entry.getKey(),id);
+        if(!sq.termcheck(id)) {
+            for (Map.Entry<String, Double> entry : hoge) {
+                if (intset.contains(hoge.indexOf(entry))) {
+                    sq.insert_term(entry.getKey(), id);
+                    System.out.println(entry.getKey());
+                    x++;
+                    list.add(entry.getKey());
+                    //System.out.println("<li class=\"ui-state-default\">" + entry.getKey() + "<span>" + x + "</span>");
                 }
-            //sq.insert_termpropose(entry.getKey(),id,c,1);
-                System.out.println(entry.getKey());
-                x++;
-                list.add(entry.getKey());
-            //System.out.println("<li class=\"ui-state-default\">" + entry.getKey() + "<span>" + x + "</span>");
+                if (x > 20) {
+                    break;
+                }
             }
-            if(x>20){
-                break;
-            }
+        }else{
+            list=sq.get_term(id);
         }
         //sq.insert_batch();
-        int c=0;
-        for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfe.getTfidf())){
-            if(list.contains(entry.getKey())){
-                sq.insert_termpropose(entry.getKey(),id,c,1);
-                c++;
+        for(Feature fe:editall){
+            try {
+                if(!sq.get_termranktype(id,editall.indexOf(fe)).next()) {
+                    List<Map.Entry> listma = MaptoList.valueSort((fe.getTfidf()));
+                    int c = 1;
+                    for (Map.Entry<String, Double> entry : listma) {
+                        if (list.contains(entry.getKey())) {
+                            sq.insert_termpropose(entry.getKey(), id, c, editall.indexOf(fe));
+                            c++;
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-
         }
-        for(Map.Entry<String,Double> entry:MaptoList.valueSort(editfecat.getTfidf())){
-            if(list.contains(entry.getKey())){
-                sq.insert_termpropose(entry.getKey(),id,c,2);
-                c++;
-            }
 
-        }
+
+
         sq.insert_batch();
 
         //考えてるだけじゃわかる兄から何かやってみる
@@ -121,7 +131,9 @@ public class InputWindow {
 
         System.out.println(wikinote.catrel(catdepth,catdepth2));*/
         //inter.mainstream();
-        //System.out.println(inter.result("ごまふあざ"));
+        for(int c=0;c<8;c++) {
+            System.out.println(inter.result(personname,c));
+        }
 
 		System.exit(0);
 	}
@@ -162,29 +174,29 @@ public class InputWindow {
 
     }
 
-    public double result(String editor){
+    public double result(String editor,int c){
         SqlOp sqop = new SqlOp(1);
         int personid =sqop.get_personid(editor);
 
         ResultSet rs = sqop.get_termrankresult(personid);
-        ResultSet rsexp = sqop.get_termranktype(personid,1);
+        ResultSet rsexp = sqop.get_termranktype(personid,c);
         List<String> rank = new ArrayList<String>();
         Map<String,Integer> blackrx = new HashMap<String, Integer>();
         try {
             while(rs.next()){
                 rank.add(rs.getString("term"));
-                System.out.println(rs.getString("term"));
+                //System.out.println(rs.getString("term"));
             }
             while(rsexp.next()){
                 blackrx.put(rsexp.getString("term"),rsexp.getInt("rank"));
-                System.out.println(rsexp.getString("term"));
+                //System.out.println(rsexp.getString("term"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         int temp = 0;
         for(Map.Entry<String,Integer> entry:blackrx.entrySet()){
-            System.out.println(entry.getValue()+":"+rank.indexOf((entry.getKey())));
+            //System.out.println(entry.getValue()+":"+rank.indexOf((entry.getKey())));
             temp+=Math.pow((entry.getValue()-(rank.indexOf(entry.getKey())+1)),2);
         }
         return 1-(6*temp/(Math.pow(rank.size(),3)-rank.size()));

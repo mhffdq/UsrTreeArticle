@@ -15,7 +15,6 @@ public class Categories {
     Map<String,Double> catidf = new HashMap<String, Double>();
     Map<String,Double> dfcount = new HashMap<String, Double>();//idfを求めるまで
 
-    ResultSet rs;
     public Categories(){
         File file = new File("category.txt");
         Tokenizer tokenizer = Tokenizer.builder().build();

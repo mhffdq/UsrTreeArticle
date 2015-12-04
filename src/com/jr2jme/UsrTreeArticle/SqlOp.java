@@ -7,6 +7,8 @@ package com.jr2jme.UsrTreeArticle;
 import com.teradata.jdbc.jdbc_4.ifsupport.Result;
 
 import java.sql.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SqlOp {
     PreparedStatement stedge =null;
@@ -324,15 +326,15 @@ public class SqlOp {
 
     }
 
-    public boolean termcheck(int name,String term){//人が選んだ単語の順番取得(引数は知りたい編集者名)
+    public boolean termcheck(int name){//人が選んだ単語の順番取得(引数は知りたい編集者名)
         PreparedStatement checkkoubun =null;//こっちは手法で求めたランク
 //いまのところ不整合があるから，挿入のやつをもっとシンプルに
         try {
             if(isdev) {
-                checkkoubun = conn.prepareStatement("SELECT * FROM db_development.terms WHERE personid = ? AND term =?");
+                checkkoubun = conn.prepareStatement("SELECT * FROM db_development.terms WHERE personid = ?");
             }
             else{
-                checkkoubun = conn.prepareStatement("SELECT * FROM db_production.terms WHERE personid = ? AND term =?");
+                checkkoubun = conn.prepareStatement("SELECT * FROM db_production.terms WHERE personid = ?");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -341,7 +343,6 @@ public class SqlOp {
         boolean yes=false;
         try {
             checkkoubun.setInt(1, name);
-            checkkoubun.setString(2, term);
             rs = checkkoubun.executeQuery();
             yes=  rs.next();
         } catch (SQLException e) {
@@ -350,6 +351,38 @@ public class SqlOp {
         return yes;
 
     }
+
+    public Set<String> get_term(int name){//人が選んだ単語の順番取得(引数は知りたい編集者名)
+        PreparedStatement checkkoubun =null;//こっちは手法で求めたランク
+//いまのところ不整合があるから，挿入のやつをもっとシンプルに
+        try {
+            if(isdev) {
+                checkkoubun = conn.prepareStatement("SELECT * FROM db_development.terms WHERE personid = ?");
+            }
+            else{
+                checkkoubun = conn.prepareStatement("SELECT * FROM db_production.terms WHERE personid = ?");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        ResultSet rs=null;
+        Set<String> sset = new HashSet<String>();
+        try {
+            checkkoubun.setInt(1, name);
+            rs = checkkoubun.executeQuery();
+            while(rs.next()){
+                sset.add(rs.getString("term"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return sset;
+
+    }
+
+
 
 
 
