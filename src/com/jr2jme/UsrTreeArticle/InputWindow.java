@@ -15,8 +15,20 @@ public class InputWindow {
     SqlOp sq = null;
 	public static void main(String[] args) throws IOException {
         //Analyzer an = new Analyzer();
-        InputWindow inter = new InputWindow();
-        String personname = "ごまふあざ";
+
+        Set<String> editorlist = new HashSet<String>();
+
+        editorlist.add("みしまるもも");
+        editorlist.add("ごまふあざ");
+        editorlist.add("Northface");
+        editorlist.add("Naruhodou");
+        editorlist.add("如月の弥");
+        editorlist.add("グローバライ");
+        editorlist.add("泉州大夫惟宗朝臣");
+        editorlist.add("矢刺幹人");
+        editorlist.add("Bokemiann");
+        editorlist.add("青鬼よし");
+        //prop(editorlist);
         //inter.test();
         //何を迷っている
         //System.out.println(ArticleEditorRanker.articleredrank("UNIX","ごまふあざ"));//こっからどうするか
@@ -34,61 +46,7 @@ public class InputWindow {
 
 
 
-        Feature editfe = new Feature(ArticleEditorRanker.testuserarticle(personname));//編集者の特徴ベクトル的なもの
-        List<Feature> editall = new ArrayList<Feature>();
-        for(Map<String,Double> ma :ArticleEditorRanker.testuserarticleall(personname)){//本当はArticleRankerのほうでやったほうがいいけどまあいいや
-            editall.add(new Feature(ma));
-        }
-        SqlOp sq = new SqlOp(1);
-        try {
-            if(!sq.get_person(personname).next()) {
-                sq.insert_person(personname);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        int id=sq.get_personid(personname);
-        int x = 0;
-        Set<String> list = new HashSet<String>();
-        Set<Integer> intset =inter.genrand(20);
-        List<Map.Entry>hoge =MaptoList.valueSort(editfe.getTfidf());
-        if(!sq.termcheck(id)) {
-            for (Map.Entry<String, Double> entry : hoge) {
-                if (intset.contains(hoge.indexOf(entry))) {
-                    sq.insert_term(entry.getKey(), id);
-                    System.out.println(entry.getKey());
-                    x++;
-                    list.add(entry.getKey());
-                    //System.out.println("<li class=\"ui-state-default\">" + entry.getKey() + "<span>" + x + "</span>");
-                }
-                if (x > 20) {
-                    break;
-                }
-            }
-        }else{
-            list=sq.get_term(id);
-        }
-        //sq.insert_batch();
-        for(Feature fe:editall){
-            try {
-                if(!sq.get_termranktype(id,editall.indexOf(fe)).next()) {
-                    List<Map.Entry> listma = MaptoList.valueSort((fe.getTfidf()));
-                    int c = 1;
-                    for (Map.Entry<String, Double> entry : listma) {
-                        if (list.contains(entry.getKey())) {
-                            sq.insert_termpropose(entry.getKey(), id, c, editall.indexOf(fe));
-                            c++;
-                        }
-                    }
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
 
-
-
-        sq.insert_batch();
 
         //考えてるだけじゃわかる兄から何かやってみる
         //何をやったらいいかな
@@ -132,11 +90,72 @@ public class InputWindow {
         System.out.println(wikinote.catrel(catdepth,catdepth2));*/
         //inter.mainstream();
         for(int c=0;c<8;c++) {
-            System.out.println(inter.result(personname,c));
+            System.out.println("最終"+results(editorlist,c));
         }
 
 		System.exit(0);
 	}
+
+    public static void prop(Set<String> editorset){
+        InputWindow inter = new InputWindow();
+        for(String editor:editorset){
+            Feature editfe = new Feature(ArticleEditorRanker.testuserarticle(editor));//編集者の特徴ベクトル的なもの
+            List<Feature> editall = new ArrayList<Feature>();
+            for(Map<String,Double> ma :ArticleEditorRanker.testuserarticleall(editor)){//本当はArticleRankerのほうでやったほうがいいけどまあいいや
+                editall.add(new Feature(ma));
+            }
+            SqlOp sq = new SqlOp(1);
+            try {
+                if(!sq.get_person(editor).next()) {
+                    sq.insert_person(editor);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            int id=sq.get_personid(editor);
+            int x = 0;
+            Set<String> list = new HashSet<String>();
+            Set<Integer> intset =inter.genrand(20);
+            List<Map.Entry>hoge =MaptoList.valueSort(editfe.getTfidf());
+            if(!sq.termcheck(id)) {
+                for (Map.Entry<String, Double> entry : hoge) {
+                    if (intset.contains(hoge.indexOf(entry))) {
+                        sq.insert_term(entry.getKey(), id);
+                        System.out.println(entry.getKey());
+                        x++;
+                        list.add(entry.getKey());
+                        //System.out.println("<li class=\"ui-state-default\">" + entry.getKey() + "<span>" + x + "</span>");
+                    }
+                    if (x > 20) {
+                        break;
+                    }
+                }
+            }else{
+                list=sq.get_term(id);
+            }
+            //sq.insert_batch();
+            for(Feature fe:editall){
+                try {
+                    if(!sq.get_termranktype(id,editall.indexOf(fe)).next()) {
+                        List<Map.Entry> listma = MaptoList.valueSort((fe.getTfidf()));
+                        int c = 1;
+                        for (Map.Entry<String, Double> entry : listma) {
+                            if (list.contains(entry.getKey())) {
+                                sq.insert_termpropose(entry.getKey(), id, c, editall.indexOf(fe));
+                                c++;
+                            }
+                        }
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+
+            sq.insert_batch();
+        }
+    }
 
     //やりたいのは，nanika
     //もっと簡単に考える
@@ -196,10 +215,48 @@ public class InputWindow {
         }
         int temp = 0;
         for(Map.Entry<String,Integer> entry:blackrx.entrySet()){
-            //System.out.println(entry.getValue()+":"+rank.indexOf((entry.getKey())));
+            //System.out.println(entry.getKey()+entry.getValue()+":"+(rank.indexOf(entry.getKey())+1));
             temp+=Math.pow((entry.getValue()-(rank.indexOf(entry.getKey())+1)),2);
         }
         return 1-(6*temp/(Math.pow(rank.size(),3)-rank.size()));
+
+    }
+
+    public static double results(Set<String> editors,int c){
+        SqlOp sqop = new SqlOp(1);
+        int temp = 0;
+        int sumrank=0;
+        for(String editor:editors) {
+            System.out.println(editor);
+            int personid = sqop.get_personid(editor);
+
+            ResultSet rs = sqop.get_termrankresult(personid);
+            ResultSet rsexp = sqop.get_termranktype(personid, c);
+            List<String> rank = new ArrayList<String>();
+            Map<String, Integer> blackrx = new HashMap<String, Integer>();
+            try {
+
+                while (rs.next()) {
+                    rank.add(rs.getString("term"));
+                    //System.out.println(rs.getString("term"));
+                }
+                while (rsexp.next()) {
+                    blackrx.put(rsexp.getString("term"), rsexp.getInt("rank"));
+                    //System.out.println(rsexp.getString("term"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            int pretemp = 0;
+            for (Map.Entry<String, Integer> entry : blackrx.entrySet()) {
+                //System.out.println(entry.getKey()+entry.getValue()+":"+(rank.indexOf(entry.getKey())+1));
+                pretemp += Math.pow((entry.getValue() - (rank.indexOf(entry.getKey()) + 1)), 2);
+            }
+            System.out.println(1-(6*pretemp/(Math.pow(rank.size(),3)-rank.size())));
+            temp+=pretemp;
+            sumrank+=rank.size();
+        }
+        return 1-(6*temp/(Math.pow(sumrank,3)-sumrank));
 
     }
 

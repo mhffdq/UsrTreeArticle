@@ -157,7 +157,7 @@ public class ArticleEditorRanker {
             for(Token tok:tokens){
                 if(tok.getPartOfSpeech().contains("名詞")){
                     if(weightmap.containsKey(tok.getSurfaceForm())) {
-                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * 10);//shitaの方にあるカテゴリを単純に重く
+                        tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() * weightmap.get(tok.getSurfaceForm()));//shitaの方にあるカテゴリを単純に重く
                     }else{
                         tf.addtfcountweight(tok.getSurfaceForm(), vv.getValue() );
                     }

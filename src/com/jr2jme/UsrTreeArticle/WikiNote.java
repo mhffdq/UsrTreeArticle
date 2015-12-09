@@ -250,7 +250,7 @@ public class WikiNote {
 
     public int getbunyacount(String cat){//分野名っぽいカテゴリを取得
         int count = 1;//下に同じ名前を含んだカテゴリがあるかどうかを確かめる
-        for(String bcat:getcategoriescat(cat).getBelowcat()){
+        for(String bcat:getcategoriescat("Category:"+cat).getBelowcat()){
             if(bcat.contains(cat)){
               count++;
             }
@@ -311,7 +311,7 @@ public class WikiNote {
         for(String cate:categories){
             if(!cate.equals("Category:隠しカテゴリ")&&!cate.contains("\\\\")&&!cate.contains("/")&&!cate.contains(",_")&&!cate.contains("*")&&!cate.contains(",_")&&!cate.contains("?")) {
                 Set<String> tempset = getcategoriescat(cate).getBelowcat();
-                weightmap.put(cate, depthstart);
+                weightmap.put(cate.substring(9), depthstart);
                 nextset.addAll(tempset);
             }
         }
