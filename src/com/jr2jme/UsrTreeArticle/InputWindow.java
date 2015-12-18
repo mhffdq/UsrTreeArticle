@@ -28,7 +28,8 @@ public class InputWindow {
         editorlist.add("矢刺幹人");
         editorlist.add("Bokemiann");
         editorlist.add("青鬼よし");
-        //prop(editorlist);
+        //prop(editorlist);//提案手法の計算
+
         //inter.test();
         //何を迷っている
         //System.out.println(ArticleEditorRanker.articleredrank("UNIX","ごまふあざ"));//こっからどうするか
@@ -90,7 +91,7 @@ public class InputWindow {
         System.out.println(wikinote.catrel(catdepth,catdepth2));*/
         //inter.mainstream();
         for(int c=0;c<8;c++) {
-            System.out.println("最終"+results(editorlist,c));
+            System.out.println(results(editorlist,c));
         }
 
 		System.exit(0);
@@ -227,7 +228,7 @@ public class InputWindow {
         int temp = 0;
         int sumrank=0;
         for(String editor:editors) {
-            System.out.println(editor);
+            //System.out.println(editor);
             int personid = sqop.get_personid(editor);
 
             ResultSet rs = sqop.get_termrankresult(personid);
@@ -252,7 +253,7 @@ public class InputWindow {
                 //System.out.println(entry.getKey()+entry.getValue()+":"+(rank.indexOf(entry.getKey())+1));
                 pretemp += Math.pow((entry.getValue() - (rank.indexOf(entry.getKey()) + 1)), 2);
             }
-            System.out.println(1-(6*pretemp/(Math.pow(rank.size(),3)-rank.size())));
+            //System.out.println(1-(6*pretemp/(Math.pow(rank.size(),3)-rank.size())));
             temp+=pretemp;
             sumrank+=rank.size();
         }
