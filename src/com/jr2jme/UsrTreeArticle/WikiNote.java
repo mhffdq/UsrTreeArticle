@@ -16,6 +16,7 @@ import org.xml.sax.SAXException;
 
 public class WikiNote {
     static Integer uid=null;
+    //隠しカテゴリを抜きたい
 	public WikiUsernote getnotelist(String usrname){
 
 		return  notelist(usrname,"");
